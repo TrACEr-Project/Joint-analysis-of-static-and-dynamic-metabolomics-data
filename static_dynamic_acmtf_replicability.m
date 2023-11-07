@@ -124,10 +124,10 @@ for kk=1:N
         end
         
         %%record the results by ACMTF models from all splits
-        Results{ii}.cov_info=flag_stop;
-        Results{ii}.info_best=data;
-        Results{ii}.R=R;
-        Results_all{(kk-1)*10+ii}=Results{ii};
+        Results{1,ii}.cov_info=flag_stop;
+        Results{1,ii}.info_best=data;
+        Results{1,ii}.R=R;
+        Results_all{1,(kk-1)*10+ii}=Results{1,ii};
     end
     
     
@@ -140,7 +140,7 @@ end
 %% compute FMS_tensor and FMS_matrix based on Results_all
 % select the splits with unique factorizations by ACMTF model for further replicability check
 % load('Results_all.mat','Results_all')
-R=Results_all{1}.R;
+R=Results_all{1,1}.R;
 % need to check uniquess within each split---check uniqueness for lambda,sigma, and factors from static and dynamic data
 % store the index of unique splits in uni_index with 1 for unique split
 uni_index_lamdas=zeros(length(Results_all),1);
@@ -148,7 +148,7 @@ uni_index_tensorFMS=zeros(length(Results_all),1);
 uni_index_matrixsimi=zeros(length(Results_all),1);
 uni_index=zeros(length(Results_all),1);
 for i=1:length(Results_all)
-    [Fac_aligned, lamdas, sigmas] = check_spread_only(R, Results_all{i}.info_best.Fac_sorted, Results_all{i}.info_best.func_eval, 0);
+    [Fac_aligned, lamdas, sigmas] = check_spread_only(R, Results_all{1,i}.info_best.Fac_sorted, Results_all{1,i}.info_best.func_eval, 0);
     % check lamdas and sigmas
     a=min(abs(max(lamdas)-min(lamdas))./abs(mean(lamdas)));
     b=min(abs(max(sigmas)-min(sigmas))./abs(mean(sigmas)));
@@ -163,13 +163,14 @@ for i=1:length(Results_all)
             for kk=1:length(Fac_aligned)
                 FMS_score_tensor(jj,kk) = score(ktensor(Fac_aligned{jj}{1}.lambda,Fac_aligned{jj}{1}.U{2},Fac_aligned{jj}{1}.U{3}),...
                     ktensor(Fac_aligned{kk}{1}.lambda,Fac_aligned{kk}{1}.U{2},Fac_aligned{kk}{1}.U{3}),'lambda_penalty',false);
-                Simi_score_matrix(jj,kk)=subspace(Fac_aligned{jj}{2}.U{2},Fac_aligned{kk}{2}.U{2});
+                Simi_score_matrix(jj,kk)=score(ktensor(Fac_aligned{jj}{2}.lambda,Fac_aligned{jj}{2}.U{2}),...
+                    ktensor(Fac_aligned{kk}{2}.lambda,Fac_aligned{kk}{2}.U{2}),'lambda_penalty',false);
             end
         end
         if min(min(FMS_score_tensor))>=0.95
             uni_index_tensorFMS(i)=1;
         end
-        if min(min(Simi_score_matrix))<=0.05
+        if min(min(Simi_score_matrix))>=0.95
             uni_index_matrixsimi(i)=1;
         end
         if ( uni_index_lamdas(i)>0 & uni_index_tensorFMS(i)>0 ) & uni_index_matrixsimi(i)>0
@@ -183,8 +184,8 @@ end
 %%pick only unique splits to check replicability
 index_uniq=find(uni_index>0);
 for i=1:length(index_uniq)
-    Fac_all{i}=Results_all{index_uniq(i)}.info_best.Fac_sorted{1};
-    ff_all(i)=Results_all{index_uniq(i)}.info_best.func_eval(1);
+    Fac_all{i}=Results_all{1,index_uniq(i)}.info_best.Fac_sorted{1};
+    ff_all(i)=Results_all{1,index_uniq(i)}.info_best.func_eval(1);
 end
 %%compte factor match score
 [ff_sorted_all, index_ff] = sort(ff_all,'ascend');
