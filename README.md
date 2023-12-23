@@ -9,7 +9,7 @@ All the implementations are tested on MacOS version 10.15.3.
 *  Daniel M. Dunlavy, Tamara G. Kolda, and Evrim Acar, “Poblano v1.0: A Matlab Toolbox for Gradient-Based Optimization”, 2010. Available online at https://github.com/sandialabs/poblano_toolbox
 * Eigenvector Research, DataSet Object, available online at https://eigenvector.com/software/dataset-object/
 
-All the packages should be installed as a subfolder under Matlab path
+All packages should be installed as a subfolder under Matlab path
 
 
 ## Descriptions of the codes 
