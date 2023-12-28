@@ -1,23 +1,10 @@
 % This script shows how to fit an ACMTF model to jointly analyze a matrix
 % (static) and tensor (dynamic) metabolomics data
-
-% We use CMTF Toolbox version 1.1 as well as the Poblano Toolbox to fit ACMTF model
-
-% In addition, parts of the scripts may require the dataset object (https://eigenvector.com/software/dataset-object/), publically available.
-
-clear all
-clc
-close all
-
-
 %% add auxilary functions to path
 addpath(genpath('./functions'))
 
-%% add other pckages to path
-addpath(genpath('.../CMTF_Toolbox_v1_1')) %Tensor toolbox is needed;  MATLAB Tensor Toolbox. Copyright 2017, Sandia Corporation, http://www.tensortoolbox.org/
-addpath(genpath('.../poblano_toolbox_1.1')) % LBFGS-B implementation is needed; download here: https://github.com/stephenbeckr/L-BFGS-B-C
-addpath(genpath('.../dataset')) % dataset object is needed; download here: https://eigenvector.com/software/dataset-object/
-
+% add the necessary toolboxes: Tensor Toolbox, CMTF Toolbox, Poblano toolbox and dataset object
+% see https://github.com/Lu-source/Joint-analysis-of-static-and-dynamic-metabolomics-data/blob/main/README.md
 
 %%  load dataset
 load('data.mat','X_T0c','X_T0') % X_T0c and X_T0 are dataset objects 
@@ -63,7 +50,7 @@ beta     = [1e-3 1e-3]; % l1-penalty parameter for the higher-order tensors
 nb_runs  = 10;
 goodness_X = zeros(nb_runs,1); %Stores objective function value
 for i=1:nb_runs
-    if i==1 && R<min(size(Z))
+    if i==1
         [Fac{i}, ~ , out{i}]    = acmtf_opt(Z,R,'init','nvecs','alg_options',options, 'beta', beta, 'alg','ncg');
     else
         [Fac{i}, ~ , out{i}]    = acmtf_opt(Z,R,'init','random','alg_options',options, 'beta', beta, 'alg','ncg');
@@ -100,8 +87,8 @@ for p=1:P
     data.fit(p) = 100- (norm(Z.miss{p}.*tensor(full(data.Zhat{p})-Z.object{p}))^2/norm(Z.miss{p}.*Z.object{p})^2*100);
 end
 data.out        = out_sorted{1};
-data.func_eval       = ff; %value of the objective function
-data.lambda = l_rec;
+data.func_eval  = ff; %value of the objective function for all runs
+data.lambda     = l_rec;
 data.Z          = Z;
 
 
@@ -221,11 +208,3 @@ for j=1:nm_comp
             'Rest','Total','-VLDL','XXL-VLDL','XL-VLDL','L-VLDL','M-VLDL','S-LDL','XS-VLDL')
     end
 end
-
-
-
-
-
-
-
-

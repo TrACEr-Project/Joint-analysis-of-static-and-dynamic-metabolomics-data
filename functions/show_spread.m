@@ -1,4 +1,4 @@
-function  [Fac_aligned, varargout] = show_spread_server_v3(R, Fac_f100, ff, server_flag)
+function  [Fac_aligned, varargout] = show_spread(R, Fac_f100, ff, server_flag)
 
 min_val = min(ff);
 %nb_rep  = length(find((ff-min_val)<= 9e-5));
