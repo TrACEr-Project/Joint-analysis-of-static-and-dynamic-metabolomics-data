@@ -121,7 +121,7 @@ end
 
 
 %% plot the factors by ACMTF model, 
-% each column represents one component by the ACMTF model
+% each column represents one component of the ACMTF model
 % each row represents one mode
 
 nm_comp=R;

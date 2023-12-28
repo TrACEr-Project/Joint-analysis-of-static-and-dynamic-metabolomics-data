@@ -1,13 +1,12 @@
-%%Preprocess the data: for a three-way data, centering across the first (subject) mode, and scaling within
-%%the third (metabolites) mode;
-%%For a two-way data: centering across the first(subject)mode, and scaling
-%%within the second(metabolites) mode
-
-%%the three-way data X has mode subjects*time*metabolites
-
-%%the two-way data X has mode subjects*metabolites
-
 function X_pre=preprocess(X)
+% Preprocess the input data array. For a three-way data, it centers across
+% the first (subject) mode, and scales within the third (metabolites) mode.
+% For a two-way array, it centers across the first (subject) mode, and
+% scales within the second (metabolites) mode. 
+%
+% The three-way array X has modes: subjects, time, metabolites
+% The two-way array X has modes: subjects, metabolites
+
 s=size(X);
 if length(s)==2
     X_center=X-repmat(nanmean(X,1),s(1),1);
