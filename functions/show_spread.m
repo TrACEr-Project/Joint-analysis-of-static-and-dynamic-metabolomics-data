@@ -1,9 +1,7 @@
 function  [Fac_aligned, varargout] = show_spread(R, Fac_f100, ff, server_flag)
 
 min_val = min(ff);
-%nb_rep  = length(find((ff-min_val)<= 9e-5));
 nb_rep  = length(find((ff-min_val)/min_val<=1e-6))
-%nb_rep =2;
 P = length(Fac_f100{1});
 for i=1:nb_rep
     c   = abs(corr(Fac_f100{1}{1}.U{1},Fac_f100{i}{1}.U{1}));
