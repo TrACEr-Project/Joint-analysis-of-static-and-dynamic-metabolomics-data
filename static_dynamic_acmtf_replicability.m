@@ -1,23 +1,14 @@
 % This script shows an example to check the replicability of an ACMTF model
-% applied to a matrix (static) and a tensor (dynamic)
+% applied to a matrix (static) and a third-order tensor (dynamic)
 
-% We use CMTF Toolbox version 1.1 as well as the Poblano Toolbox to fit the ACMTF model
 % When calculating factor match score (FMS), we use score.m from the Tensor toolbox version 3.1
 % parts of the scripts may require the dataset object (https://eigenvector.com/software/dataset-object/), publically available.
-
-clear all
-clc
-close all
-
 
 %% add auxilary functions to path
 addpath(genpath('./functions'))
 
-%% add pckages to path
-addpath(genpath('.../tensor_toolbox-v3.1')) %Tensor toolbox is needed;  MATLAB Tensor Toolbox. Copyright 2017, Sandia Corporation, http://www.tensortoolbox.org/
-addpath(genpath('.../CMTF_Toolbox_v1_1')) %CMTF toolbox is needed; Available online at http://www.models.life.ku.dk/joda/CMTF Toolbox
-addpath(genpath('.../poblano_toolbox_1.1')) % Poblano toolbox is needed; Available online at https://github.com/sandialabs/poblano_toolbox
-addpath(genpath('.../dataset')) % dataset object is needed; download here: https://github.com/sandialabs/poblano_toolbox
+% add the necessary toolboxes: Tensor Toolbox, CMTF Toolbox, Poblano toolbox and dataset object
+% see https://github.com/Lu-source/Joint-analysis-of-static-and-dynamic-metabolomics-data/blob/main/README.md
 
 
 %%  load dataset
