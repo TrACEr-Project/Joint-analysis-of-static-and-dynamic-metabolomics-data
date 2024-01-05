@@ -11,7 +11,7 @@ All the implementations are tested on MacOS version 10.15.3.
 
 Toolboxes should be added to the Matlab path.
 
-## Descriptions of the files 
+## File Descriptions  
 
 *  The file 'static_dynamic_acmtf.m' is for fitting an ACMTF model to the fasting and T0-corrected dynamic metabolomics data using multiple initializations, and also plotting the factors
 *  The file 'static_dynamic_acmtf_replicability.m' is an example code for checking the replicability of an ACMTF model
