@@ -57,8 +57,8 @@ for kk=1:N
     
     % preprocess the data and run ACMTF model for data from each split
     for ii=1:length(X_split_left_T0c)
-        X_correct=X_split_left_T0c{i}.data;
-        X_t0=X_split_left_T0{i}.data;
+        X_correct=X_split_left_T0c{ii}.data;
+        X_t0=X_split_left_T0{ii}.data;
         % preprocess the data: centering and scaling
         Z1=tensor(preprocess(X_correct));
         Z2=tensor(preprocess(X_t0));
