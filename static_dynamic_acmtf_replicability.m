@@ -125,27 +125,27 @@ end
 
 
 %% compute FMS_tensor and FMS_matrix based on Results_all
-%%%%%%%%%%% select the unique splits for further replicability check
-R=Results_all{1,1}.R;
+% select the unique splits for further replicability check
+R = Results_all{1,1}.R;
 % check uniquess within each split--- unique lambda and sigma, and factors from matrix and tensor
-uni_index_lamdas=zeros(length(Results_all),1);
-uni_index_tensorFMS=zeros(length(Results_all),1);
-uni_index_matrixFMS=zeros(length(Results_all),1);
-uni_index=zeros(length(Results_all),1); % store the index of unique splits in uni_index with 1 for unique split
-for i=1:length(Results_all)
+uni_index_lamdas     = zeros(length(Results_all),1);
+uni_index_tensorFMS  = zeros(length(Results_all),1);
+uni_index_matrixFMS  = zeros(length(Results_all),1);
+uni_index            = zeros(length(Results_all),1); % store the index of unique splits in uni_index with 1 for unique split
+for i = 1:length(Results_all)
     % get the best factors --- the factors with the smallest function values
-    [Fac_aligned, lamdas, sigmas] = check_spread_only(R, Results_all{1,i}.info_best.Fac_sorted, Results_all{1,i}.info_best.func_eval, 0);
+    [Fac_aligned, lamdas, sigmas] = check_spread_only(R, Results_all{1,i}.info_best.Fac_sorted, Results_all{1,i}.info_best.func_eval);
     % check lamdas and sigmas
-    a=min(abs(max(lamdas)-min(lamdas))./abs(mean(lamdas)));
-    b=min(abs(max(sigmas)-min(sigmas))./abs(mean(sigmas)));
+    a = min(abs(max(lamdas)-min(lamdas))./abs(mean(lamdas)));
+    b = min(abs(max(sigmas)-min(sigmas))./abs(mean(sigmas)));
     if length(Fac_aligned)<2
         disp (['need more starts in the',num2str(i),'subset'])
     else
         if max(a,b)<=1e-2
-            uni_index_lamdas(i)=1; % splits with unique lambda and sigma
+            uni_index_lamdas(i) = 1; % splits with unique lambda and sigma
         end
-        for jj=1:length(Fac_aligned)
-            for kk=1:length(Fac_aligned)
+        for jj = 1:length(Fac_aligned)
+            for kk = 1:length(Fac_aligned)
                 FMS_score_tensor(jj,kk) = score(ktensor(Fac_aligned{jj}{1}.lambda,Fac_aligned{jj}{1}.U{2},Fac_aligned{jj}{1}.U{3}),...
                     ktensor(Fac_aligned{kk}{1}.lambda,Fac_aligned{kk}{1}.U{2},Fac_aligned{kk}{1}.U{3}),'lambda_penalty',false);
                 FMS_score_matrix(jj,kk)=score(ktensor(Fac_aligned{jj}{2}.lambda,Fac_aligned{jj}{2}.U{2}),...
@@ -166,7 +166,7 @@ for i=1:length(Results_all)
     
 end
 
-%%%%%%%%%%% pick only unique splits to check replicability --- compute FMS
+% pick only unique splits to check replicability --- compute FMS
 index_uniq=find(uni_index>0);
 for i=1:length(index_uniq)
     Fac_all{i}=Results_all{1,index_uniq(i)}.info_best.Fac_sorted{1};

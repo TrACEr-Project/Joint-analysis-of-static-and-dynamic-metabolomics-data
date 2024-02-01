@@ -1,4 +1,4 @@
-function  [Fac_aligned, varargout] = check_spread_lu(R, Fac_f100, ff, server_flag)
+function  [Fac_aligned, varargout] = check_spread_only(R, Fac_f100, ff)
 
 min_val = min(ff);
 %nb_rep  = length(find((ff-min_val)<= 9e-5));
