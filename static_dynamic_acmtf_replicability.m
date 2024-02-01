@@ -15,11 +15,11 @@ addpath(genpath('./functions'))
 load('data.mat','X_T0c','X_T0') % X_T0c and X_T0 are dataset objects
 
 %% data before split----rearrange the data so that Lower BMI subjects appear first
-sub_normal=find(X_T0c.class{1,2}==1 | X_T0c.class{1,2}==4); % Lower BMI subjects
-sub_abnormal=find(X_T0c.class{1,2}==2 | X_T0c.class{1,2}==3);% Higher BMI subjects
-index_perm=[sub_normal,sub_abnormal];
-X_T0c=X_T0c(index_perm,:,:);
-X_T0=X_T0(index_perm,:);
+sub_normal   = find(X_T0c.class{1,2}==1 | X_T0c.class{1,2}==4); % Lower BMI subjects
+sub_abnormal = find(X_T0c.class{1,2}==2 | X_T0c.class{1,2}==3);% Higher BMI subjects
+index_perm   = [sub_normal,sub_abnormal];
+X_T0c        = X_T0c(index_perm,:,:);
+X_T0         = X_T0(index_perm,:);
 
 
 %% ACMTF model---set up
@@ -153,13 +153,13 @@ for i = 1:length(Results_all)
             end
         end
         if min(min(FMS_score_tensor))>=0.95
-            uni_index_tensorFMS(i)=1; % splits with unique factors--tensor 
+            uni_index_tensorFMS(i) = 1; % splits with unique factors--tensor 
         end
         if min(min(FMS_score_matrix))>=0.95
-            uni_index_matrixFMS(i)=1; % splits with unique factors--matrix
+            uni_index_matrixFMS(i) = 1; % splits with unique factors--matrix
         end
         if ( uni_index_lamdas(i)>0 & uni_index_tensorFMS(i)>0 ) & uni_index_matrixFMS(i)>0
-            uni_index(i)=1; % unique splits
+            uni_index(i) = 1; % unique splits
         end
     end
     
@@ -167,22 +167,22 @@ for i = 1:length(Results_all)
 end
 
 % pick only unique splits to check replicability --- compute FMS
-index_uniq=find(uni_index>0);
-for i=1:length(index_uniq)
-    Fac_all{i}=Results_all{1,index_uniq(i)}.info_best.Fac_sorted{1};
-    ff_all(i)=Results_all{1,index_uniq(i)}.info_best.func_eval(1);
+index_uniq = find(uni_index>0);
+for i = 1:length(index_uniq)
+    Fac_all{i} = Results_all{1,index_uniq(i)}.info_best.Fac_sorted{1};
+    ff_all(i)  = Results_all{1,index_uniq(i)}.info_best.func_eval(1);
 end
 [ff_sorted_all, index_ff] = sort(ff_all,'ascend');
-for i=1:length(index_ff)
-    Fac_sorted_all{i}=Fac_all{index_ff(i)};
+for i = 1:length(index_ff)
+    Fac_sorted_all{i} = Fac_all{index_ff(i)};
 end
-kk=0;
-for ii=1:length(Fac_sorted_all)
-    for jj=ii+1:length(Fac_sorted_all)
-        kk=kk+1;
-        FMS_tensor(kk)=score(ktensor(Fac_sorted_all{ii}{1}.lambda,Fac_sorted_all{ii}{1}.U{2},Fac_sorted_all{ii}{1}.U{3}),...
+kk = 0;
+for ii = 1:length(Fac_sorted_all)
+    for jj = ii+1:length(Fac_sorted_all)
+        kk = kk+1;
+        FMS_tensor(kk) = score(ktensor(Fac_sorted_all{ii}{1}.lambda,Fac_sorted_all{ii}{1}.U{2},Fac_sorted_all{ii}{1}.U{3}),...
             ktensor(Fac_sorted_all{jj}{1}.lambda,Fac_sorted_all{jj}{1}.U{2},Fac_sorted_all{jj}{1}.U{3}),'lambda_penalty',false);
-        FMS_matrix(kk)=score(ktensor(Fac_sorted_all{ii}{2}.lambda,Fac_sorted_all{ii}{2}.U{2}),...
+        FMS_matrix(kk) = score(ktensor(Fac_sorted_all{ii}{2}.lambda,Fac_sorted_all{ii}{2}.U{2}),...
             ktensor(Fac_sorted_all{jj}{2}.lambda,Fac_sorted_all{jj}{2}.U{2}),'lambda_penalty',false);
     end
 end
@@ -190,21 +190,21 @@ end
 
 
 %% plot FMS_tensor and FMS_matrix
-f=figure;
+f = figure;
 subplot(1,2,1)
 boxplot(FMS_tensor); ylabel('FMS_{tensor}'); xlabel(['R=',num2str(R)])
 set(gca,'Fontsize',18)
 set(findobj(gca, 'type', 'line'), 'LineWidth', 1.5);
-index= round(length(FMS_tensor)*0.95);
-aaa = sort(FMS_tensor,'descend');
+index = round(length(FMS_tensor)*0.95);
+aaa   = sort(FMS_tensor,'descend');
 hold on;
 plot(R-0.25:0.005:R+0.25, ones(101,1)*aaa(index),'g-','Linewidth',2);
 yticks([0.2 0.4 0.6 0.7 0.8 0.9 1.0])
 subplot(1,2,2)
 boxplot(FMS_matrix); ylabel('FMS_{matrix}'); xlabel(['R=',num2str(R)])
 set(findobj(gca, 'type', 'line'), 'LineWidth', 1.5);
-index= round(length(FMS_matrix)*0.95);
-aaa = sort(FMS_matrix,'descend');
+index = round(length(FMS_matrix)*0.95);
+aaa   = sort(FMS_matrix,'descend');
 hold on;
 plot(R-0.25:0.005:R+0.25, ones(101,1)*aaa(index),'g-','Linewidth',2);
 set(gca,'Fontsize',18)
