@@ -30,43 +30,43 @@ options.MaxIters     = 10000;
 options.StopTol      = 1e-8;
 options.RelFuncTol   = 1e-8;
 P = 2;
-R=2;
+R = 2;
 beta     = [1e-3 1e-3]; % sparsity on the weihts of rank-one components
 nb_runs  = 32;
 
 
 %% in total, we do N=10 rounds split10; kk--the kk_th round;
-N=10;
-Results_all=cell(1,N*10);
-for kk=1:N
+N = 10;
+Results_all = cell(1,N*10);
+for kk = 1:N
     % randomly shuffle the subjects and save the index in S_perm
-    S_perm=[randperm(length(sub_normal)),randperm(length(sub_abnormal))+length(sub_normal)];
-    X_split_left_T0c=cell(1,10);
-    X_split_left_T0=cell(1,10);
-    Sub_rem_index=cell(1,10);
+    S_perm = [randperm(length(sub_normal)),randperm(length(sub_abnormal))+length(sub_normal)];
+    X_split_left_T0c = cell(1,10);
+    X_split_left_T0  = cell(1,10);
+    Sub_rem_index    = cell(1,10);
     
     % data sets -- randomly remove 1/10 subjects in each data set
-    for i=1:10
-        S_perm_rem=S_perm(i:10:end);
-        pid_list=str2num(X_T0c.label{1});
-        remove_pid=pid_list(S_perm_rem);
-        X_split_left_T0c{i}=removesubject(X_T0c,remove_pid'); % the T0-corrected data after removing 1/10 subjects
-        X_split_left_T0{i}=removesubject(X_T0,remove_pid'); % the T0 data after removing 1/10 subjects
-       Sub_rem_index{1,i}=S_perm_rem; % record the position of the removed subject
+    for i = 1:10
+        S_perm_rem = S_perm(i:10:end);
+        pid_list   = str2num(X_T0c.label{1});
+        remove_pid = pid_list(S_perm_rem);
+        X_split_left_T0c{i} = removesubject(X_T0c,remove_pid'); % the T0-corrected data after removing 1/10 subjects
+        X_split_left_T0{i}  = removesubject(X_T0,remove_pid'); % the T0 data after removing 1/10 subjects
+       Sub_rem_index{1,i}   = S_perm_rem; % record the position of the removed subject
     end
     
     % preprocess the data and run ACMTF model for data from each split
-    for ii=1:length(X_split_left_T0c)
-        X_correct=X_split_left_T0c{ii}.data;
-        X_t0=X_split_left_T0{ii}.data;
+    for ii = 1:length(X_split_left_T0c)
+        X_correct = X_split_left_T0c{ii}.data;
+        X_t0      = X_split_left_T0{ii}.data;
         % preprocess the data: centering and scaling
-        Z1=tensor(preprocess(X_correct));
-        Z2=tensor(preprocess(X_t0));
+        Z1 = tensor(preprocess(X_correct));
+        Z2 = tensor(preprocess(X_t0));
         % ACMTF model---data preparation
         W{1} = tensor(~isnan(Z1.data));
         W{2} = tensor(~isnan(Z2.data));
-        Z1(find(W{1}.data==0))=0;
-        Z2(find(W{2}.data==0))=0;
+        Z1(find(W{1}.data==0)) = 0;
+        Z2(find(W{2}.data==0)) = 0;
         Z.miss{1} = W{1};
         Z.miss{2} = W{2};
         Z.object{1} = Z1;
@@ -78,7 +78,7 @@ for kk=1:N
             Z.object{p} = Z.object{p}/norms(p);
         end
         % fit ACMTF model
-        for i=1:nb_runs
+        for i = 1:nb_runs
             if i==1 && R<min(size(Z))
                 [Fac{i}, ~, out{i}]    = acmtf_opt(Z,R,'init','nvecs', 'alg_options', options,  'beta' ,beta, 'alg','ncg');
             else
