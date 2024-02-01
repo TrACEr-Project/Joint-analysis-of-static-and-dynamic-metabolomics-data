@@ -79,7 +79,7 @@ for kk = 1:N
         end
         % fit ACMTF model
         for i = 1:nb_runs
-            if i==1 && R<min(size(Z))
+            if i==1 && R<=min(min(size(Z.object{1})),min(size(Z.object{2})))
                 [Fac{i}, ~, out{i}]    = acmtf_opt(Z,R,'init','nvecs', 'alg_options', options,  'beta' ,beta, 'alg','ncg');
             else
                 [Fac{i}, ~, out{i}]    = acmtf_opt(Z,R,'init','random', 'alg_options', options,  'beta' ,beta, 'alg','ncg');
