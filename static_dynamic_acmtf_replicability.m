@@ -133,7 +133,7 @@ FMS_matrix=[];
 for kkk=1:length(Results_all) % Loop through all splits, in total 10 splits 
     l=0; % record the number of unique factorization in each split
     for i=1:length(Results_all{1,kkk})
-        [Fac_aligned, lamdas, sigmas] = check_spread_lu(R, Results_all{1,kkk}{1,i}.info_best.Fac_sorted, Results_all{1,kkk}{1,i}.info_best.func_eval);
+        [Fac_aligned, lamdas, sigmas] = check_spread_only(R, Results_all{1,kkk}{1,i}.info_best.Fac_sorted, Results_all{1,kkk}{1,i}.info_best.func_eval);
         a = min(abs(max(lamdas)-min(lamdas))./abs(mean(lamdas)));
         b = min(abs(max(sigmas)-min(sigmas))./abs(mean(sigmas)));
         if length(Fac_aligned)<2
