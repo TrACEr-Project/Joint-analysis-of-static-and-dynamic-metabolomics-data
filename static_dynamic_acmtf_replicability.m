@@ -1,5 +1,8 @@
 % This script shows how to check the replicability of an ACMTF model when jointly analyzing a matrix
-% (static) and tensor (dynamic) metabolomics data
+% (static) and tensor (dynamic) metabolomics data: 1) randomly leave out 10% of the samples and compute
+% the FMS between the best runs, 2) repeat this process ten times and return in total 450 FMS
+% Present boxplots using the 450 FMS
+
 
 % We use CMTF Toolbox as well as the Poblano Toolbox to fit the ACMTF model
 % When calculating factor match score (FMS), we use score.m from the Tensor toolbox version 3.1
@@ -52,7 +55,7 @@ for kk = 1:N
         remove_pid = pid_list(S_perm_rem);
         X_split_left_T0c{i} = removesubject(X_T0c,remove_pid'); % the T0-corrected data after removing 1/10 subjects
         X_split_left_T0{i}  = removesubject(X_T0,remove_pid'); % the T0 data after removing 1/10 subjects
-       Sub_rem_index{1,i}   = S_perm_rem; % record the position of the removed subject
+        Sub_rem_index{1,i}   = S_perm_rem; % record the position of the removed subject
     end
     
     % preprocess the data and run ACMTF model for data from each split
@@ -62,7 +65,7 @@ for kk = 1:N
         % preprocess the data: centering and scaling
         Z1 = tensor(preprocess(X_correct));
         Z2 = tensor(preprocess(X_t0));
-        % ACMTF model---data preparation
+        % ACMTF model -- data preparation
         W{1} = tensor(~isnan(Z1.data));
         W{2} = tensor(~isnan(Z2.data));
         Z1(find(W{1}.data==0)) = 0;
@@ -104,7 +107,7 @@ for kk = 1:N
         data.func_eval  = ff;%value of the loss function
         % calculate the model fit
         for i=1:2
-                  data.fit(i) = 100- norm(tensor(times(W{i},full(data.Zhat{i})-Z.object{i})))^2/norm(tensor(times(W{i},Z.object{i})))^2*100;  
+            data.fit(i) = 100- norm(tensor(times(W{i},full(data.Zhat{i})-Z.object{i})))^2/norm(tensor(times(W{i},Z.object{i})))^2*100;
         end
         
         % record the factorization results from each split
@@ -112,10 +115,10 @@ for kk = 1:N
         Results_ii.info_best=data;
         Results_ii.R=R;
         Results_ii.Sub_rem=Sub_rem_index{1,ii};
-        Results_all{1,(kk-1)*10+ii}=Results_ii;
+        Results_all{1,kk}{1,ii}=Results_ii;
         % clear temporary variables
         clear Results_ii data Z1 Z2 Z W Zhat ...
-        l_rec temp Fac_sorted out_sorted ff index
+            l_rec temp Fac_sorted out_sorted ff index
         
     end
     
@@ -124,69 +127,63 @@ for kk = 1:N
 end
 
 
-%% compute FMS_tensor and FMS_matrix based on Results_all
-% select the unique splits for further replicability check
-R = Results_all{1,1}.R;
-% check uniquess within each split--- unique lambda and sigma, and factors from matrix and tensor
-uni_index_lamdas     = zeros(length(Results_all),1);
-uni_index_tensorFMS  = zeros(length(Results_all),1);
-uni_index_matrixFMS  = zeros(length(Results_all),1);
-uni_index            = zeros(length(Results_all),1); % store the index of unique splits in uni_index with 1 for unique split
-for i = 1:length(Results_all)
-    % get the best factors --- the factors with the smallest function values
-    [Fac_aligned, lamdas, sigmas] = check_spread_only(R, Results_all{1,i}.info_best.Fac_sorted, Results_all{1,i}.info_best.func_eval);
-    % check lamdas and sigmas
-    a = min(abs(max(lamdas)-min(lamdas))./abs(mean(lamdas)));
-    b = min(abs(max(sigmas)-min(sigmas))./abs(mean(sigmas)));
-    if length(Fac_aligned)<2
-        disp (['need more starts in the',num2str(i),'subset'])
-    else
-        if max(a,b)<=1e-2
-            uni_index_lamdas(i) = 1; % splits with unique lambda and sigma
-        end
-        for jj = 1:length(Fac_aligned)
-            for kk = 1:length(Fac_aligned)
-                FMS_score_tensor(jj,kk) = score(ktensor(Fac_aligned{jj}{1}.lambda,Fac_aligned{jj}{1}.U{2},Fac_aligned{jj}{1}.U{3}),...
-                    ktensor(Fac_aligned{kk}{1}.lambda,Fac_aligned{kk}{1}.U{2},Fac_aligned{kk}{1}.U{3}),'lambda_penalty',false);
-                FMS_score_matrix(jj,kk)=score(ktensor(Fac_aligned{jj}{2}.lambda,Fac_aligned{jj}{2}.U{2}),...
-                    ktensor(Fac_aligned{kk}{2}.lambda,Fac_aligned{kk}{2}.U{2}),'lambda_penalty',false);
+%% compute FMS_tensor and FMS_matrix: within each split, compute pairwise FMS from unique factorizations
+FMS_tensor=[];
+FMS_matrix=[];
+for kkk=1:length(Results_all) % Loop through all splits, in total 10 splits 
+    l=0; % record the number of unique factorization in each split
+    for i=1:length(Results_all{1,kkk})
+        [Fac_aligned, lamdas, sigmas] = check_spread_lu(R, Results_all{1,kkk}{1,i}.info_best.Fac_sorted, Results_all{1,kkk}{1,i}.info_best.func_eval);
+        a = min(abs(max(lamdas)-min(lamdas))./abs(mean(lamdas)));
+        b = min(abs(max(sigmas)-min(sigmas))./abs(mean(sigmas)));
+        if length(Fac_aligned)<2
+            disp (['need more starts in the',num2str(i),'subset and ',num2str(kkk), 'split'])
+        else
+            if max(a,b)<=1e-2
+                uni_index_lamdas= 1; % factorization with unique lambda and sigma
+            end
+            ll=0;
+            for jj = 1:length(Fac_aligned)
+                for kk = jj+1:length(Fac_aligned)
+                    ll=ll+1;
+                    FMS_score_tensor(ll) = score(ktensor(Fac_aligned{jj}{1}.lambda,Fac_aligned{jj}{1}.U{2},Fac_aligned{jj}{1}.U{3}),...
+                        ktensor(Fac_aligned{kk}{1}.lambda,Fac_aligned{kk}{1}.U{2},Fac_aligned{kk}{1}.U{3}),'lambda_penalty',false);
+                    FMS_score_matrix(ll)=score(ktensor(Fac_aligned{jj}{2}.lambda,Fac_aligned{jj}{2}.U{2}),...
+                        ktensor(Fac_aligned{kk}{2}.lambda,Fac_aligned{kk}{2}.U{2}),'lambda_penalty',false);
+                end
+            end
+            if min(FMS_score_tensor)>=0.95
+                uni_index_tensorFMS = 1; % factorization with unique factors--tensor
+            end
+            if min(FMS_score_matrix)>=0.95
+                uni_index_matrixFMS = 1; % factorization with unique factors--matrix
+            end
+            if ( uni_index_lamdas>0 & uni_index_tensorFMS>0 ) & uni_index_matrixFMS>0
+                l = l+1; % record the number of unique factorization in the kkk_th split
+                Results_kkksplit_temp{1,l}=Results_all{1,kkk}{1,i};
             end
         end
-        if min(min(FMS_score_tensor))>=0.95
-            uni_index_tensorFMS(i) = 1; % splits with unique factors--tensor 
-        end
-        if min(min(FMS_score_matrix))>=0.95
-            uni_index_matrixFMS(i) = 1; % splits with unique factors--matrix
-        end
-        if ( uni_index_lamdas(i)>0 & uni_index_tensorFMS(i)>0 ) & uni_index_matrixFMS(i)>0
-            uni_index(i) = 1; % unique splits
+    end
+    % compute pairwise FMS in each split
+    ll=0;
+    for jj=1:length(Results_kkksplit_temp)
+        for kk=jj+1:length(Results_kkksplit_temp)
+            ll=ll+1;
+            Fac_real_temp_jj=Results_kkksplit_temp{1,jj}.info_best.Fac_sorted{1}{1};
+            Fac_real_temp_kk=Results_kkksplit_temp{1,kk}.info_best.Fac_sorted{1}{1};
+            fms_real_kkk_split(ll,1)=score(ktensor(Fac_real_temp_jj.lambda,Fac_real_temp_jj.U{2},Fac_real_temp_jj.U{3}),...
+                ktensor(Fac_real_temp_kk.lambda,Fac_real_temp_kk.U{2},Fac_real_temp_kk.U{3}),'lambda_penalty',false);
+            Fac_sim_temp_jj=Results_kkksplit_temp{1,jj}.info_best.Fac_sorted{1}{2};
+            Fac_sim_temp_kk=Results_kkksplit_temp{1,kk}.info_best.Fac_sorted{1}{2};
+            fms_sim_kkk_split(ll,1)=score(ktensor(Fac_sim_temp_jj.lambda,Fac_sim_temp_jj.U{2}),...
+                ktensor(Fac_sim_temp_kk.lambda,Fac_sim_temp_kk.U{2}),'lambda_penalty',false);
         end
     end
-    
-    
+    % save all pairwise FMS from all splits in FMS_tensor and FMS_matrix
+    FMS_tensor=[FMS_tensor;fms_real_kkk_split];
+    FMS_matrix=[FMS_matrix;fms_sim_kkk_split];
+    clear    fms_real_kkk_split  fms_sim_kkk_split
 end
-
-% pick only unique splits to check replicability --- compute FMS
-index_uniq = find(uni_index>0);
-for i = 1:length(index_uniq)
-    Fac_all{i} = Results_all{1,index_uniq(i)}.info_best.Fac_sorted{1};
-    ff_all(i)  = Results_all{1,index_uniq(i)}.info_best.func_eval(1);
-end
-[ff_sorted_all, index_ff] = sort(ff_all,'ascend');
-for i = 1:length(index_ff)
-    Fac_sorted_all{i} = Fac_all{index_ff(i)};
-end
-kk = 0;
-for ii = 1:length(Fac_sorted_all)
-    for jj = ii+1:length(Fac_sorted_all)
-        kk = kk+1;
-        FMS_tensor(kk) = score(ktensor(Fac_sorted_all{ii}{1}.lambda,Fac_sorted_all{ii}{1}.U{2},Fac_sorted_all{ii}{1}.U{3}),...
-            ktensor(Fac_sorted_all{jj}{1}.lambda,Fac_sorted_all{jj}{1}.U{2},Fac_sorted_all{jj}{1}.U{3}),'lambda_penalty',false);
-        FMS_matrix(kk) = score(ktensor(Fac_sorted_all{ii}{2}.lambda,Fac_sorted_all{ii}{2}.U{2}),...
-            ktensor(Fac_sorted_all{jj}{2}.lambda,Fac_sorted_all{jj}{2}.U{2}),'lambda_penalty',false);
-    end
-end
-
 
 
 %% plot FMS_tensor and FMS_matrix
