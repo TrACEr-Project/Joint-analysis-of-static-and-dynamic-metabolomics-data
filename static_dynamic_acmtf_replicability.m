@@ -40,7 +40,7 @@ nb_runs  = 32;
 
 %% in total, we do N=10 rounds split10; kk--the kk_th round;
 N = 10;
-Results_all = cell(1,N*10);
+Results_all = cell(1,N);
 for kk = 1:N
     % randomly shuffle the subjects and save the index in S_perm
     S_perm = [randperm(length(sub_normal)),randperm(length(sub_abnormal))+length(sub_normal)];
