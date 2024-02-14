@@ -186,26 +186,7 @@ for kkk=1:length(Results_all) % Loop through all splits, in total 10 splits
 end
 
 
-%% plot FMS_tensor and FMS_matrix
-f = figure;
-subplot(1,2,1)
-boxplot(FMS_tensor); ylabel('FMS_{tensor}'); xlabel(['R=',num2str(R)])
-set(gca,'Fontsize',18)
-set(findobj(gca, 'type', 'line'), 'LineWidth', 1.5);
-index = round(length(FMS_tensor)*0.95);
-aaa   = sort(FMS_tensor,'descend');
-hold on;
-plot(R-0.25:0.005:R+0.25, ones(101,1)*aaa(index),'g-','Linewidth',2);
-yticks([0.2 0.4 0.6 0.7 0.8 0.9 1.0])
-subplot(1,2,2)
-boxplot(FMS_matrix); ylabel('FMS_{matrix}'); xlabel(['R=',num2str(R)])
-set(findobj(gca, 'type', 'line'), 'LineWidth', 1.5);
-index = round(length(FMS_matrix)*0.95);
-aaa   = sort(FMS_matrix,'descend');
-hold on;
-plot(R-0.25:0.005:R+0.25, ones(101,1)*aaa(index),'g-','Linewidth',2);
-set(gca,'Fontsize',18)
-yticks([0.2 0.4 0.6 0.7 0.8 0.9 1.0])
+
 
 
 
