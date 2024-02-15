@@ -1,7 +1,7 @@
 % This script shows how to check the replicability of an ACMTF model when jointly analyzing a matrix
 % (static) and tensor (dynamic) metabolomics data: 1) randomly leave out 10% of the samples and compute
 % the FMS between the best runs, 2) repeat this process ten times and return in total 450 FMS
-% Present boxplots using the 450 FMS
+
 
 
 % We use CMTF Toolbox as well as the Poblano Toolbox to fit the ACMTF model
@@ -90,7 +90,7 @@ for kk = 1:N
         Fac_sorted = Fac(index);
         out_sorted = out(index);
         % check the stopping condition for the best run
-        if (out{index(1)}.ExitFlag~=2) && (out{index(1)}.ExitFlag~=1)
+        if (out{index(1)}.ExitFlag==0) | (out{index(1)}.ExitFlag==3)
             flag_stop = true;
         else
             flag_stop = false;
@@ -133,23 +133,16 @@ FMS_matrix=[];
 for kkk=1:length(Results_all) % Loop through all splits, in total 10 splits 
     l=0; % record the number of unique factorization in each split
     for i=1:length(Results_all{1,kkk})
-        [Fac_aligned, lamdas, sigmas] = check_spread_only(R, Results_all{1,kkk}{1,i}.info_best.Fac_sorted, Results_all{1,kkk}{1,i}.info_best.func_eval);
-        a = min(abs(max(lamdas)-min(lamdas))./abs(mean(lamdas)));
-        b = min(abs(max(sigmas)-min(sigmas))./abs(mean(sigmas)));
+        Fac_aligned = show_spread(R, Results_all{1,kkk}{1,i}.info_best.Fac_sorted, Results_all{1,kkk}{1,i}.info_best.func_eval,1);
         if length(Fac_aligned)<2
             disp (['need more starts in the',num2str(i),'subset and ',num2str(kkk), 'split'])
         else
-            if max(a,b)<=1e-2
-                uni_index_lamdas= 1; % factorization with unique lambda and sigma
-            end
             ll=0;
             for jj = 1:length(Fac_aligned)
                 for kk = jj+1:length(Fac_aligned)
                     ll=ll+1;
-                    FMS_score_tensor(ll) = score(ktensor(Fac_aligned{jj}{1}.lambda,Fac_aligned{jj}{1}.U{2},Fac_aligned{jj}{1}.U{3}),...
-                        ktensor(Fac_aligned{kk}{1}.lambda,Fac_aligned{kk}{1}.U{2},Fac_aligned{kk}{1}.U{3}),'lambda_penalty',false);
-                    FMS_score_matrix(ll)=score(ktensor(Fac_aligned{jj}{2}.lambda,Fac_aligned{jj}{2}.U{2}),...
-                        ktensor(Fac_aligned{kk}{2}.lambda,Fac_aligned{kk}{2}.U{2}),'lambda_penalty',false);
+                    FMS_score_tensor(ll) = score(Fac_aligned{jj}{1},Fac_aligned{kk}{1},'lambda_penalty',false);
+                    FMS_score_matrix(ll)=score(Fac_aligned{jj}{2},Fac_aligned{kk}{2},'lambda_penalty',false);
                 end
             end
             if min(FMS_score_tensor)>=0.95
@@ -158,13 +151,13 @@ for kkk=1:length(Results_all) % Loop through all splits, in total 10 splits
             if min(FMS_score_matrix)>=0.95
                 uni_index_matrixFMS = 1; % factorization with unique factors--matrix
             end
-            if ( uni_index_lamdas>0 & uni_index_tensorFMS>0 ) & uni_index_matrixFMS>0
+            if  uni_index_tensorFMS>0  & uni_index_matrixFMS>0
                 l = l+1; % record the number of unique factorization in the kkk_th split
-                Results_kkksplit_temp{1,l}=Results_all{1,kkk}{1,i};
+                Results_kkksplit_temp{1,l}=Results_all{1,kkk}{1,i}; % temp variable to store unique factorizations in the kkk_th split
             end
         end
     end
-    % compute pairwise FMS in each split
+    % compute pairwise FMS in the kkk_th split 
     ll=0;
     for jj=1:length(Results_kkksplit_temp)
         for kk=jj+1:length(Results_kkksplit_temp)
@@ -182,7 +175,7 @@ for kkk=1:length(Results_all) % Loop through all splits, in total 10 splits
     % save all pairwise FMS from all splits in FMS_tensor and FMS_matrix
     FMS_tensor=[FMS_tensor;fms_real_kkk_split];
     FMS_matrix=[FMS_matrix;fms_sim_kkk_split];
-    clear    fms_real_kkk_split  fms_sim_kkk_split
+    clear    fms_real_kkk_split  fms_sim_kkk_split Results_kkksplit_temp
 end
 
 
