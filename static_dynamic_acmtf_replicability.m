@@ -128,21 +128,21 @@ end
 
 
 %% compute FMS_tensor and FMS_matrix: within each split, compute pairwise FMS from unique factorizations
-FMS_tensor=[];
-FMS_matrix=[];
-for kkk=1:length(Results_all) % Loop through all splits, in total 10 splits 
-    l=0; % record the number of unique factorization in each split
-    for i=1:length(Results_all{1,kkk})
-        Fac_aligned = show_spread(R, Results_all{1,kkk}{1,i}.info_best.Fac_sorted, Results_all{1,kkk}{1,i}.info_best.func_eval,1);
+FMS_tensor = [];
+FMS_matrix = [];
+for kkk = 1:length(Results_all) % Loop through all splits, in total 10 splits 
+    l = 0; % record the number of unique factorization in each split
+    for i = 1:length(Results_all{kkk})
+        Fac_aligned = show_spread(R, Results_all{kkk}{i}.info_best.Fac_sorted, Results_all{kkk}{i}.info_best.func_eval,1);
         if length(Fac_aligned)<2
             disp (['need more starts in the',num2str(i),'subset and ',num2str(kkk), 'split'])
         else
-            ll=0;
+            ll = 0;
             for jj = 1:length(Fac_aligned)
                 for kk = jj+1:length(Fac_aligned)
-                    ll=ll+1;
+                    ll = ll+1;
                     FMS_score_tensor(ll) = score(Fac_aligned{jj}{1},Fac_aligned{kk}{1},'lambda_penalty',false);
-                    FMS_score_matrix(ll)=score(Fac_aligned{jj}{2},Fac_aligned{kk}{2},'lambda_penalty',false);
+                    FMS_score_matrix(ll) = score(Fac_aligned{jj}{2},Fac_aligned{kk}{2},'lambda_penalty',false);
                 end
             end
             if min(FMS_score_tensor)>=0.95
@@ -153,38 +153,25 @@ for kkk=1:length(Results_all) % Loop through all splits, in total 10 splits
             end
             if  uni_index_tensorFMS>0  & uni_index_matrixFMS>0
                 l = l+1; % record the number of unique factorization in the kkk_th split
-                Results_kkksplit_temp{1,l}=Results_all{1,kkk}{1,i}; % temp variable to store unique factorizations in the kkk_th split
+                Results_kkk{l}=Results_all{kkk}{i}; % temp variable to store unique factorizations in the kkk_th split
             end
         end
     end
     % compute pairwise FMS in the kkk_th split 
-    ll=0;
-    for jj=1:length(Results_kkksplit_temp)
-        for kk=jj+1:length(Results_kkksplit_temp)
-            ll=ll+1;
-            Fac_real_temp_jj=Results_kkksplit_temp{1,jj}.info_best.Fac_sorted{1}{1};
-            Fac_real_temp_kk=Results_kkksplit_temp{1,kk}.info_best.Fac_sorted{1}{1};
-            fms_real_kkk_split(ll,1)=score(ktensor(Fac_real_temp_jj.lambda,Fac_real_temp_jj.U{2},Fac_real_temp_jj.U{3}),...
-                ktensor(Fac_real_temp_kk.lambda,Fac_real_temp_kk.U{2},Fac_real_temp_kk.U{3}),'lambda_penalty',false);
-            Fac_sim_temp_jj=Results_kkksplit_temp{1,jj}.info_best.Fac_sorted{1}{2};
-            Fac_sim_temp_kk=Results_kkksplit_temp{1,kk}.info_best.Fac_sorted{1}{2};
-            fms_sim_kkk_split(ll,1)=score(ktensor(Fac_sim_temp_jj.lambda,Fac_sim_temp_jj.U{2}),...
-                ktensor(Fac_sim_temp_kk.lambda,Fac_sim_temp_kk.U{2}),'lambda_penalty',false);
+    ll = 0;
+    for jj = 1:length(Results_kkk)
+        for kk = jj+1:length(Results_kkk)
+            ll = ll+1;
+            Fac_tensor_jj = Results_kkk{jj}.info_best.Fac_sorted{1}{1};
+            Fac_tensor_kk = Results_kkk{kk}.info_best.Fac_sorted{1}{1};
+            fms_tensor_kkk(ll) = score(ktensor(Fac_tensor_jj.lambda,Fac_tensor_jj.U{2},Fac_tensor_jj.U{3}),ktensor(Fac_tensor_kk.lambda,Fac_tensor_kk.U{2},Fac_tensor_kk.U{3}),'lambda_penalty',false);
+            Fac_matrix_jj = Results_kkk{jj}.info_best.Fac_sorted{1}{2};
+            Fac_matrix_kk = Results_kkk{kk}.info_best.Fac_sorted{1}{2};
+            fms_matrix_kkk(ll) = score(ktensor(Fac_matrix_jj.lambda,Fac_matrix_jj.U{2}),ktensor(Fac_matrix_kk.lambda,Fac_matrix_kk.U{2}),'lambda_penalty',false);
         end
     end
     % save all pairwise FMS from all splits in FMS_tensor and FMS_matrix
-    FMS_tensor=[FMS_tensor;fms_real_kkk_split];
-    FMS_matrix=[FMS_matrix;fms_sim_kkk_split];
-    clear    fms_real_kkk_split  fms_sim_kkk_split Results_kkksplit_temp
+    FMS_tensor = [FMS_tensor;fms_tensor_kkk'];
+    FMS_matrix = [FMS_matrix;fms_matrix_kkk'];
+    clear  fms_tensor_kkk  fms_matrix_kkk Results_kkk
 end
-
-
-
-
-
-
-
-
-
-
-
