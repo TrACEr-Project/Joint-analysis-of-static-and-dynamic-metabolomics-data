@@ -21,3 +21,5 @@ Toolboxes should be added to the Matlab path.
    * The file 'check_spread_only.m' exports the factors of an ACMTF model from specific runs which give the smallest function values
    * The file 'plot_metab_set.m' is used to generate indexes and plotting markers for metabolite classess according to their density and size
    * The file 'preprocess.m' is used to preprocess a third-order tensor or a matrix by centering across the first mode, and scaling within the third mode (second mode if the input is a matrix)
+
+**Original repository:** https://github.com/Lu-source/Joint-analysis-of-static-and-dynamic-metabolomics-data
